@@ -42,10 +42,6 @@ export default function StudentDashboard() {
         return <CheckCircle className="h-4 w-4 text-green-600" />;
       case "absent":
         return <XCircle className="h-4 w-4 text-red-600" />;
-      case "late":
-        return <Clock className="h-4 w-4 text-yellow-600" />;
-      case "excused":
-        return <AlertCircle className="h-4 w-4 text-blue-600" />;
       default:
         return null;
     }
@@ -57,10 +53,6 @@ export default function StudentDashboard() {
         return "bg-green-100 text-green-700";
       case "absent":
         return "bg-red-100 text-red-700";
-      case "late":
-        return "bg-yellow-100 text-yellow-700";
-      case "excused":
-        return "bg-blue-100 text-blue-700";
       default:
         return "bg-gray-100 text-gray-700";
     }
@@ -71,13 +63,13 @@ export default function StudentDashboard() {
     total: attendance.length,
     present: attendance.filter(a => a.status === "present").length,
     absent: attendance.filter(a => a.status === "absent").length,
-    late: attendance.filter(a => a.status === "late").length,
-    excused: attendance.filter(a => a.status === "excused").length,
   };
 
   const attendanceRate = attendanceStats.total > 0 
-    ? Math.round(((attendanceStats.present + attendanceStats.late + attendanceStats.excused) / attendanceStats.total) * 100)
+    ? Math.round((attendanceStats.present / attendanceStats.total) * 100)
     : 0;
+
+  const isLowAttendance = attendanceRate < 75;
 
   if (classesLoading) {
     return (
@@ -187,12 +179,12 @@ export default function StudentDashboard() {
                   <h2 className="text-lg font-semibold text-gray-900" data-testid="text-attendance-overview-title">
                     Attendance Overview
                   </h2>
-                  <Badge className="bg-navy-100 text-navy-700" data-testid="badge-attendance-rate">
+                  <Badge className={isLowAttendance ? "bg-red-100 text-red-700" : "bg-navy-100 text-navy-700"} data-testid="badge-attendance-rate">
                     {attendanceRate}% Attendance Rate
                   </Badge>
                 </div>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-green-600" data-testid="text-present-count">
                       {attendanceStats.present}
@@ -204,18 +196,6 @@ export default function StudentDashboard() {
                       {attendanceStats.absent}
                     </div>
                     <div className="text-xs text-gray-500">Absent</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-600" data-testid="text-late-count">
-                      {attendanceStats.late}
-                    </div>
-                    <div className="text-xs text-gray-500">Late</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600" data-testid="text-excused-count">
-                      {attendanceStats.excused}
-                    </div>
-                    <div className="text-xs text-gray-500">Excused</div>
                   </div>
                 </div>
 

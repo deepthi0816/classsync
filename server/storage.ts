@@ -77,22 +77,22 @@ export class MemStorage implements IStorage {
     const students: User[] = [
       {
         id: "student-1",
-        email: "john.doe@student.edu",
-        name: "John Doe",
+        email: "alice.wong@student.edu",
+        name: "Alice Wong",
         role: "student",
         password: "password123"
       },
       {
         id: "student-2",
-        email: "sarah.johnson@student.edu",
-        name: "Sarah Johnson",
+        email: "bob.garcia@student.edu",
+        name: "Bob Garcia",
         role: "student",
         password: "password123"
       },
       {
         id: "student-3",
-        email: "mike.chen@student.edu",
-        name: "Mike Chen",
+        email: "carol.davis@student.edu",
+        name: "Carol Davis",
         role: "student",
         password: "password123"
       }
@@ -137,46 +137,51 @@ export class MemStorage implements IStorage {
     ];
     classes.forEach(cls => this.classes.set(cls.id, cls));
 
-    // Create enrollments
+    // Create enrollments - One student per class
     const enrollments: Enrollment[] = [
       {
         id: "enrollment-1",
-        studentId: "student-1",
-        classId: "class-1",
+        studentId: "student-1", // Alice Wong
+        classId: "class-1", // CS 201 Data Structures
         enrolledAt: new Date()
       },
       {
         id: "enrollment-2",
-        studentId: "student-2",
-        classId: "class-1",
+        studentId: "student-2", // Bob Garcia
+        classId: "class-2", // CS 301 Database Systems
         enrolledAt: new Date()
       },
       {
         id: "enrollment-3",
-        studentId: "student-3",
-        classId: "class-1",
-        enrolledAt: new Date()
-      },
-      {
-        id: "enrollment-4",
-        studentId: "student-1",
-        classId: "class-2",
-        enrolledAt: new Date()
-      },
-      {
-        id: "enrollment-5",
-        studentId: "student-2",
-        classId: "class-2",
-        enrolledAt: new Date()
-      },
-      {
-        id: "enrollment-6",
-        studentId: "student-1",
-        classId: "class-3",
+        studentId: "student-3", // Carol Davis
+        classId: "class-3", // CS 401 Software Engineering
         enrolledAt: new Date()
       }
     ];
     enrollments.forEach(enrollment => this.enrollments.set(enrollment.id, enrollment));
+
+    // Add some sample attendance data to test percentage calculation
+    const sampleAttendance: Attendance[] = [
+      // Alice Wong (student-1) - CS 201: 60% attendance (3 present, 2 absent)
+      { id: "att-1", classId: "class-1", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-20", status: "present", notes: null, markedAt: new Date() },
+      { id: "att-2", classId: "class-1", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-21", status: "absent", notes: null, markedAt: new Date() },
+      { id: "att-3", classId: "class-1", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-22", status: "present", notes: null, markedAt: new Date() },
+      { id: "att-4", classId: "class-1", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-23", status: "absent", notes: null, markedAt: new Date() },
+      { id: "att-5", classId: "class-1", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-24", status: "present", notes: null, markedAt: new Date() },
+
+      // Bob Garcia (student-2) - CS 301: 100% attendance (3 present)
+      { id: "att-6", classId: "class-2", studentId: "student-2", teacherId: "teacher-1", date: "2025-08-20", status: "present", notes: null, markedAt: new Date() },
+      { id: "att-7", classId: "class-2", studentId: "student-2", teacherId: "teacher-1", date: "2025-08-21", status: "present", notes: null, markedAt: new Date() },
+      { id: "att-8", classId: "class-2", studentId: "student-2", teacherId: "teacher-1", date: "2025-08-22", status: "present", notes: null, markedAt: new Date() },
+
+      // Carol Davis (student-3) - CS 401: 80% attendance (4 present, 1 absent)
+      { id: "att-9", classId: "class-3", studentId: "student-3", teacherId: "teacher-1", date: "2025-08-20", status: "present", notes: null, markedAt: new Date() },
+      { id: "att-10", classId: "class-3", studentId: "student-3", teacherId: "teacher-1", date: "2025-08-21", status: "present", notes: null, markedAt: new Date() },
+      { id: "att-11", classId: "class-3", studentId: "student-3", teacherId: "teacher-1", date: "2025-08-22", status: "absent", notes: null, markedAt: new Date() },
+      { id: "att-12", classId: "class-3", studentId: "student-3", teacherId: "teacher-1", date: "2025-08-23", status: "present", notes: null, markedAt: new Date() },
+      { id: "att-13", classId: "class-3", studentId: "student-3", teacherId: "teacher-1", date: "2025-08-24", status: "present", notes: null, markedAt: new Date() }
+    ];
+    sampleAttendance.forEach(att => this.attendance.set(att.id, att));
   }
 
   async getUser(id: string): Promise<User | undefined> {

@@ -57,7 +57,7 @@ export const attendance = pgTable("attendance", {
   studentId: varchar("student_id").notNull(),
   teacherId: varchar("teacher_id").notNull(),
   date: text("date").notNull(), // "2024-03-12"
-  status: text("status", { enum: ["present", "absent", "late", "excused"] }).notNull(),
+  status: text("status", { enum: ["present", "absent"] }).notNull(),
   notes: text("notes"),
   markedAt: timestamp("marked_at").notNull().defaultNow(),
 });

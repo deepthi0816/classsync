@@ -270,8 +270,6 @@ export default function AttendanceModal({ isOpen, onClose, classes }: Attendance
                           <SelectContent>
                             <SelectItem value="present">Present</SelectItem>
                             <SelectItem value="absent">Absent</SelectItem>
-                            <SelectItem value="late">Late</SelectItem>
-                            <SelectItem value="excused">Excused</SelectItem>
                           </SelectContent>
                         </Select>
                         
