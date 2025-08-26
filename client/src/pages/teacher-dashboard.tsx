@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Ban, Megaphone, Users, BookOpen, AlertTriangle, ClipboardCheck } from "lucide-react";
+import { Ban, Users, BookOpen, AlertTriangle, ClipboardCheck } from "lucide-react";
 import Header from "@/components/header";
 import CancelClassModal from "@/components/cancel-class-modal";
 import AttendanceModal from "@/components/attendance-modal";
@@ -49,16 +49,10 @@ export default function TeacherDashboard() {
   const todayFormatted = format(today, "yyyy-MM-dd");
   const todayCancellations = cancellations.filter(c => c.date === todayFormatted);
 
-  // Get enrollment counts for each class
+  // Get enrollment counts for each class from stats data
   const getEnrollmentCount = (classId: string) => {
-    // This would typically come from a separate query
-    // For now, using mock data based on class
-    const mockCounts: Record<string, number> = {
-      "class-1": 42,
-      "class-2": 38,
-      "class-3": 28,
-    };
-    return mockCounts[classId] || 0;
+    const classData = stats?.classEnrollments?.find(c => c.classId === classId);
+    return classData?.enrollmentCount || 0;
   };
 
   const getCancellationForClass = (classId: string) => {
@@ -113,7 +107,7 @@ export default function TeacherDashboard() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-4" data-testid="text-quick-actions-title">
                   Quick Actions
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Button
                     onClick={() => setShowCancelModal(true)}
                     variant="outline"
@@ -131,14 +125,6 @@ export default function TeacherDashboard() {
                   >
                     <ClipboardCheck className="mr-3 h-5 w-5" />
                     Mark Attendance
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex items-center justify-center px-4 py-3 border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700"
-                    data-testid="button-send-announcement"
-                  >
-                    <Megaphone className="mr-3 h-5 w-5" />
-                    Send Announcement
                   </Button>
                 </div>
               </div>
