@@ -27,7 +27,12 @@ export default function TeacherDashboard() {
   });
 
   const { data: stats } = useQuery<{
-    totalStudents: number;
+    classEnrollments: {
+      classId: string;
+      className: string;
+      classCode: string;
+      enrollmentCount: number;
+    }[];
     activeClasses: number;
     weekCancellations: number;
   }>({
@@ -175,13 +180,18 @@ export default function TeacherDashboard() {
           <div className="space-y-6">
             {/* Stats Cards */}
             <div className="space-y-4">
-              <StatsCard
-                title="Total Students"
-                value={stats?.totalStudents || 0}
-                icon={<Users className="h-6 w-6 text-blue-600" />}
-                iconBgColor="bg-blue-100"
-                testId="stats-total-students"
-              />
+              {/* Class Enrollments */}
+              {stats?.classEnrollments?.map((classData) => (
+                <StatsCard
+                  key={classData.classId}
+                  title={`${classData.classCode} Students`}
+                  value={classData.enrollmentCount}
+                  icon={<Users className="h-6 w-6 text-blue-600" />}
+                  iconBgColor="bg-blue-100"
+                  testId={`stats-class-${classData.classId}-students`}
+                />
+              ))}
+              
               <StatsCard
                 title="Active Classes"
                 value={stats?.activeClasses || 0}

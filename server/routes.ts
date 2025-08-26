@@ -184,18 +184,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const classes = await storage.getClassesByTeacher(req.params.teacherId);
       const cancellations = await storage.getCancellationsByTeacher(req.params.teacherId);
       
-      // Get total students across all classes
-      let totalStudents = 0;
+      // Get enrollment count for each class
+      const classEnrollments = [];
       for (const cls of classes) {
         const enrollments = await storage.getEnrollmentsByClass(cls.id);
-        totalStudents += enrollments.length;
+        classEnrollments.push({
+          classId: cls.id,
+          className: cls.name,
+          classCode: cls.code,
+          enrollmentCount: enrollments.length
+        });
       }
 
       // Get this week's cancellations (simplified - just count all for demo)
       const weekCancellations = cancellations.length;
 
       res.json({
-        totalStudents,
+        classEnrollments,
         activeClasses: classes.filter(cls => cls.isActive).length,
         weekCancellations
       });
