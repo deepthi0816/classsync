@@ -137,7 +137,7 @@ export class MemStorage implements IStorage {
     ];
     classes.forEach(cls => this.classes.set(cls.id, cls));
 
-    // Create enrollments - One student per class
+    // Create enrollments - Alice in multiple classes
     const enrollments: Enrollment[] = [
       {
         id: "enrollment-1",
@@ -156,6 +156,12 @@ export class MemStorage implements IStorage {
         studentId: "student-3", // Carol Davis
         classId: "class-3", // CS 401 Software Engineering
         enrolledAt: new Date()
+      },
+      {
+        id: "enrollment-4",
+        studentId: "student-1", // Alice Wong also in CS 301
+        classId: "class-2", // CS 301 Database Systems
+        enrolledAt: new Date()
       }
     ];
     enrollments.forEach(enrollment => this.enrollments.set(enrollment.id, enrollment));
@@ -168,6 +174,11 @@ export class MemStorage implements IStorage {
       { id: "att-3", classId: "class-1", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-22", status: "present", notes: null, markedAt: new Date() },
       { id: "att-4", classId: "class-1", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-23", status: "absent", notes: null, markedAt: new Date() },
       { id: "att-5", classId: "class-1", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-24", status: "present", notes: null, markedAt: new Date() },
+
+      // Alice Wong (student-1) - CS 301: 100% attendance (3 present)
+      { id: "att-14", classId: "class-2", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-20", status: "present", notes: null, markedAt: new Date() },
+      { id: "att-15", classId: "class-2", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-21", status: "present", notes: null, markedAt: new Date() },
+      { id: "att-16", classId: "class-2", studentId: "student-1", teacherId: "teacher-1", date: "2025-08-22", status: "present", notes: null, markedAt: new Date() },
 
       // Bob Garcia (student-2) - CS 301: 100% attendance (3 present)
       { id: "att-6", classId: "class-2", studentId: "student-2", teacherId: "teacher-1", date: "2025-08-20", status: "present", notes: null, markedAt: new Date() },
