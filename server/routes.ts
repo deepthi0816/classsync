@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCancellationSchema, insertNotificationSchema } from "@shared/schema";
+import { insertCancellationSchema, insertNotificationSchema, insertAttendanceSchema } from "@shared/schema";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -131,6 +131,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await storage.markNotificationRead(req.params.id);
       res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Attendance routes
+  app.post("/api/attendance", async (req, res) => {
+    try {
+      const attendanceData = insertAttendanceSchema.parse(req.body);
+      const attendance = await storage.markAttendance(attendanceData);
+      res.json(attendance);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.get("/api/attendance/class/:classId/date/:date", async (req, res) => {
+    try {
+      const attendance = await storage.getAttendanceByClassAndDate(req.params.classId, req.params.date);
+      res.json(attendance);
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  app.get("/api/attendance/student/:studentId", async (req, res) => {
+    try {
+      const attendance = await storage.getAttendanceByStudent(req.params.studentId);
+      res.json(attendance);
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  app.patch("/api/attendance/:id", async (req, res) => {
+    try {
+      const updates = req.body;
+      const attendance = await storage.updateAttendance(req.params.id, updates);
+      if (!attendance) {
+        return res.status(404).json({ message: "Attendance record not found" });
+      }
+      res.json(attendance);
     } catch (error) {
       res.status(500).json({ message: "Server error" });
     }

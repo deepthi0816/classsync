@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Ban, Megaphone, Users, BookOpen, AlertTriangle } from "lucide-react";
+import { Ban, Megaphone, Users, BookOpen, AlertTriangle, ClipboardCheck } from "lucide-react";
 import Header from "@/components/header";
 import CancelClassModal from "@/components/cancel-class-modal";
+import AttendanceModal from "@/components/attendance-modal";
 import ClassCard from "@/components/class-card";
 import StatsCard from "@/components/stats-card";
 import NotificationBanner from "@/components/notification-banner";
@@ -13,6 +14,7 @@ import type { Class, Cancellation } from "@shared/schema";
 
 export default function TeacherDashboard() {
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
   const currentUser = getCurrentUser();
 
@@ -24,7 +26,11 @@ export default function TeacherDashboard() {
     queryKey: ["/api/cancellations/teacher", currentUser?.id],
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<{
+    totalStudents: number;
+    activeClasses: number;
+    weekCancellations: number;
+  }>({
     queryKey: ["/api/stats/teacher", currentUser?.id],
   });
 
@@ -102,7 +108,7 @@ export default function TeacherDashboard() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-4" data-testid="text-quick-actions-title">
                   Quick Actions
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <Button
                     onClick={() => setShowCancelModal(true)}
                     variant="outline"
@@ -111,6 +117,15 @@ export default function TeacherDashboard() {
                   >
                     <Ban className="mr-3 h-5 w-5" />
                     Cancel Class
+                  </Button>
+                  <Button
+                    onClick={() => setShowAttendanceModal(true)}
+                    variant="outline"
+                    className="flex items-center justify-center px-4 py-3 border-green-200 bg-green-50 hover:bg-green-100 text-green-700"
+                    data-testid="button-mark-attendance"
+                  >
+                    <ClipboardCheck className="mr-3 h-5 w-5" />
+                    Mark Attendance
                   </Button>
                   <Button
                     variant="outline"
@@ -224,6 +239,12 @@ export default function TeacherDashboard() {
       <CancelClassModal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
+        classes={classes}
+      />
+
+      <AttendanceModal
+        isOpen={showAttendanceModal}
+        onClose={() => setShowAttendanceModal(false)}
         classes={classes}
       />
     </div>

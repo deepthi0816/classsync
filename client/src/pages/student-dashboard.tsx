@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { BookOpen, Clock, MapPin, AlertCircle } from "lucide-react";
+import { BookOpen, Clock, MapPin, AlertCircle, CheckCircle, XCircle, ClipboardCheck } from "lucide-react";
 import Header from "@/components/header";
 import { Badge } from "@/components/ui/badge";
 import { getCurrentUser } from "@/lib/auth";
-import type { Class, Notification } from "@shared/schema";
+import type { Class, Notification, Attendance } from "@shared/schema";
 
 export default function StudentDashboard() {
   const currentUser = getCurrentUser();
@@ -15,6 +15,10 @@ export default function StudentDashboard() {
 
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications/user", currentUser?.id],
+  });
+
+  const { data: attendance = [] } = useQuery<Attendance[]>({
+    queryKey: ["/api/attendance/student", currentUser?.id],
   });
 
   const formatTime = (time: string) => {
@@ -31,6 +35,49 @@ export default function StudentDashboard() {
   };
 
   const unreadNotifications = notifications.filter(n => !n.isRead);
+
+  const getAttendanceStatusIcon = (status: string) => {
+    switch (status) {
+      case "present":
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "absent":
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      case "late":
+        return <Clock className="h-4 w-4 text-yellow-600" />;
+      case "excused":
+        return <AlertCircle className="h-4 w-4 text-blue-600" />;
+      default:
+        return null;
+    }
+  };
+
+  const getAttendanceStatusColor = (status: string) => {
+    switch (status) {
+      case "present":
+        return "bg-green-100 text-green-700";
+      case "absent":
+        return "bg-red-100 text-red-700";
+      case "late":
+        return "bg-yellow-100 text-yellow-700";
+      case "excused":
+        return "bg-blue-100 text-blue-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  // Calculate attendance stats
+  const attendanceStats = {
+    total: attendance.length,
+    present: attendance.filter(a => a.status === "present").length,
+    absent: attendance.filter(a => a.status === "absent").length,
+    late: attendance.filter(a => a.status === "late").length,
+    excused: attendance.filter(a => a.status === "excused").length,
+  };
+
+  const attendanceRate = attendanceStats.total > 0 
+    ? Math.round(((attendanceStats.present + attendanceStats.late + attendanceStats.excused) / attendanceStats.total) * 100)
+    : 0;
 
   if (classesLoading) {
     return (
@@ -69,7 +116,7 @@ export default function StudentDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Enrolled Classes */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
@@ -132,10 +179,94 @@ export default function StudentDashboard() {
                 </div>
               </div>
             </div>
+
+            {/* Attendance Overview */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900" data-testid="text-attendance-overview-title">
+                    Attendance Overview
+                  </h2>
+                  <Badge className="bg-navy-100 text-navy-700" data-testid="badge-attendance-rate">
+                    {attendanceRate}% Attendance Rate
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600" data-testid="text-present-count">
+                      {attendanceStats.present}
+                    </div>
+                    <div className="text-xs text-gray-500">Present</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600" data-testid="text-absent-count">
+                      {attendanceStats.absent}
+                    </div>
+                    <div className="text-xs text-gray-500">Absent</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-600" data-testid="text-late-count">
+                      {attendanceStats.late}
+                    </div>
+                    <div className="text-xs text-gray-500">Late</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600" data-testid="text-excused-count">
+                      {attendanceStats.excused}
+                    </div>
+                    <div className="text-xs text-gray-500">Excused</div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {attendance.length === 0 ? (
+                    <div className="text-center py-8">
+                      <ClipboardCheck className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500" data-testid="text-no-attendance">
+                        No attendance records yet
+                      </p>
+                    </div>
+                  ) : (
+                    attendance.slice(0, 10).map((record) => {
+                      const cls = classes.find(c => c.id === record.classId);
+                      return (
+                        <div
+                          key={record.id}
+                          className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                          data-testid={`attendance-record-${record.id}`}
+                        >
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900" data-testid={`text-attendance-class-${record.id}`}>
+                              {cls?.code} - {cls?.name}
+                            </p>
+                            <p className="text-xs text-gray-500" data-testid={`text-attendance-date-${record.id}`}>
+                              {format(new Date(record.date), "MMM d, yyyy")}
+                            </p>
+                            {record.notes && (
+                              <p className="text-xs text-gray-600 mt-1" data-testid={`text-attendance-notes-${record.id}`}>
+                                Note: {record.notes}
+                              </p>
+                            )}
+                          </div>
+                          <Badge 
+                            className={getAttendanceStatusColor(record.status)}
+                            data-testid={`badge-attendance-status-${record.id}`}
+                          >
+                            {getAttendanceStatusIcon(record.status)}
+                            <span className="ml-1 capitalize">{record.status}</span>
+                          </Badge>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Notifications */}
-          <div>
+          <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">

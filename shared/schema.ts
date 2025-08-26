@@ -51,6 +51,17 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const attendance = pgTable("attendance", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  classId: varchar("class_id").notNull(),
+  studentId: varchar("student_id").notNull(),
+  teacherId: varchar("teacher_id").notNull(),
+  date: text("date").notNull(), // "2024-03-12"
+  status: text("status", { enum: ["present", "absent", "late", "excused"] }).notNull(),
+  notes: text("notes"),
+  markedAt: timestamp("marked_at").notNull().defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
 });
@@ -74,6 +85,11 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
+export const insertAttendanceSchema = createInsertSchema(attendance).omit({
+  id: true,
+  markedAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
@@ -88,3 +104,6 @@ export type InsertCancellation = z.infer<typeof insertCancellationSchema>;
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+export type Attendance = typeof attendance.$inferSelect;
+export type InsertAttendance = z.infer<typeof insertAttendanceSchema>;

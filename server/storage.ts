@@ -8,7 +8,9 @@ import {
   type Cancellation, 
   type InsertCancellation,
   type Notification, 
-  type InsertNotification 
+  type InsertNotification,
+  type Attendance,
+  type InsertAttendance
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -39,6 +41,13 @@ export interface IStorage {
   createNotification(notification: InsertNotification): Promise<Notification>;
   getNotificationsByUser(userId: string): Promise<Notification[]>;
   markNotificationRead(id: string): Promise<void>;
+  
+  // Attendance
+  markAttendance(attendance: InsertAttendance): Promise<Attendance>;
+  getAttendanceByClass(classId: string, date: string): Promise<Attendance[]>;
+  getAttendanceByStudent(studentId: string): Promise<Attendance[]>;
+  getAttendanceByClassAndDate(classId: string, date: string): Promise<Attendance[]>;
+  updateAttendance(id: string, updates: Partial<Attendance>): Promise<Attendance | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -47,6 +56,7 @@ export class MemStorage implements IStorage {
   private enrollments: Map<string, Enrollment> = new Map();
   private cancellations: Map<string, Cancellation> = new Map();
   private notifications: Map<string, Notification> = new Map();
+  private attendance: Map<string, Attendance> = new Map();
 
   constructor() {
     this.seedData();
@@ -203,7 +213,7 @@ export class MemStorage implements IStorage {
 
   async createClass(classData: InsertClass): Promise<Class> {
     const id = randomUUID();
-    const cls: Class = { ...classData, id };
+    const cls: Class = { ...classData, id, isActive: classData.isActive ?? true };
     this.classes.set(id, cls);
     return cls;
   }
@@ -243,7 +253,9 @@ export class MemStorage implements IStorage {
     const newCancellation: Cancellation = { 
       ...cancellation, 
       id, 
-      cancelledAt: new Date() 
+      cancelledAt: new Date(),
+      additionalNotes: cancellation.additionalNotes ?? null,
+      willReschedule: cancellation.willReschedule ?? false
     };
     this.cancellations.set(id, newCancellation);
     return newCancellation;
@@ -264,7 +276,8 @@ export class MemStorage implements IStorage {
     const newNotification: Notification = { 
       ...notification, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      isRead: notification.isRead ?? false
     };
     this.notifications.set(id, newNotification);
     return newNotification;
@@ -281,6 +294,43 @@ export class MemStorage implements IStorage {
     if (notification) {
       this.notifications.set(id, { ...notification, isRead: true });
     }
+  }
+
+  async markAttendance(attendance: InsertAttendance): Promise<Attendance> {
+    const id = randomUUID();
+    const newAttendance: Attendance = {
+      ...attendance,
+      id,
+      markedAt: new Date(),
+      notes: attendance.notes ?? null
+    };
+    this.attendance.set(id, newAttendance);
+    return newAttendance;
+  }
+
+  async getAttendanceByClass(classId: string, date: string): Promise<Attendance[]> {
+    return Array.from(this.attendance.values())
+      .filter(attendance => attendance.classId === classId && attendance.date === date);
+  }
+
+  async getAttendanceByStudent(studentId: string): Promise<Attendance[]> {
+    return Array.from(this.attendance.values())
+      .filter(attendance => attendance.studentId === studentId)
+      .sort((a, b) => b.markedAt.getTime() - a.markedAt.getTime());
+  }
+
+  async getAttendanceByClassAndDate(classId: string, date: string): Promise<Attendance[]> {
+    return Array.from(this.attendance.values())
+      .filter(attendance => attendance.classId === classId && attendance.date === date);
+  }
+
+  async updateAttendance(id: string, updates: Partial<Attendance>): Promise<Attendance | undefined> {
+    const existingAttendance = this.attendance.get(id);
+    if (!existingAttendance) return undefined;
+    
+    const updatedAttendance = { ...existingAttendance, ...updates };
+    this.attendance.set(id, updatedAttendance);
+    return updatedAttendance;
   }
 }
 
